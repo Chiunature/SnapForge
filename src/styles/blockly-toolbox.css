@@ -1,0 +1,23 @@
+/* Blockly 默认工具箱容器：宽度压缩为 0，仅保留 Flyout 飞出面板功能。
+   分类侧边栏 UI 由 React 的 CategoryToolbar 组件负责，样式见 category-toolbar.css */
+
+.blocklyToolboxDiv {
+	width: 0 !important;
+	min-width: 0 !important;
+	overflow: hidden !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	border: none !important;
+	/* 不用 display:none，否则 Flyout 定位失效 */
+}
+
+/* Flyout 面板背景色 */
+.blocklyFlyoutBackground {
+	fill: #fdfdff !important;
+	fill-opacity: 1 !important;
+}
+
+/* Flyout 滚动条 */
+.blocklyScrollbarHandle {
+	fill: rgba(255, 255, 255, 0.2) !important;
+}

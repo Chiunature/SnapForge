@@ -4,9 +4,22 @@ import path from "node:path";
 ipcMain.handle("ping", async () => {
 	return "pong";
 });
+
 let splashWindow: BrowserWindow | null = null;
 let mainWindow: BrowserWindow | null = null;
-//创建闪屏窗口
+
+function getSplashHtmlPath() {
+	return path.join(app.getAppPath(), "src", "splash.html");
+}
+
+function getRendererIndexPath() {
+	return path.join(app.getAppPath(), "renderer", "dist", "index.html");
+}
+
+function getDevServerUrl() {
+	return process.env.VITE_DEV_SERVER_URL;
+}
+
 function createSplashWindow() {
 	splashWindow = new BrowserWindow({
 		width: 400,
@@ -21,32 +34,26 @@ function createSplashWindow() {
 		},
 	});
 
-	// 加载闪屏页面（你可以自己做动画）
-	splashWindow.loadFile(path.join(__dirname, "..", "src", "splash.html"));
-	splashWindow.center(); // 居中
+	void splashWindow.loadFile(getSplashHtmlPath());
+	splashWindow.center();
 
-	// 闪屏关闭后清空引用
 	splashWindow.on("closed", () => {
 		splashWindow = null;
 	});
 }
-//创建主窗口
-async function createWindow() {
-	const preloadPath = path.join(__dirname, "preload.js");
-	const indexPath = path.join(__dirname, "..", "renderer", "dist", "index.html");
 
+async function createWindow() {
 	mainWindow = new BrowserWindow({
 		width: 1100,
 		height: 800,
-		show: false, //先不显示
+		show: false,
 		webPreferences: {
-			preload: preloadPath,
+			preload: path.join(__dirname, "preload.js"),
 			contextIsolation: true,
 			nodeIntegration: false,
 		},
 	});
 
-	// 先绑定事件，再 load；否则 did-finish-load 可能已触发导致永远不 show/不关 splash
 	let didFinish = false;
 	const fallbackTimer = setTimeout(() => {
 		if (didFinish) return;
@@ -63,12 +70,12 @@ async function createWindow() {
 		}, 2000);
 	});
 
-	const devUrl = process.env.VITE_DEV_SERVER_URL;
+	const devUrl = getDevServerUrl();
 	if (devUrl) {
 		await mainWindow.loadURL(devUrl);
 		mainWindow.webContents.openDevTools({ mode: "detach" });
 	} else {
-		await mainWindow.loadFile(indexPath);
+		await mainWindow.loadFile(getRendererIndexPath());
 	}
 
 	mainWindow.on("closed", () => {
@@ -77,8 +84,8 @@ async function createWindow() {
 }
 
 app.whenReady().then(() => {
-	createSplashWindow(); // 先启动闪屏
-	void createWindow(); // 再创建主窗口
+	createSplashWindow();
+	void createWindow();
 });
 
 app.on("window-all-closed", () => {
@@ -87,6 +94,7 @@ app.on("window-all-closed", () => {
 
 app.on("activate", () => {
 	if (BrowserWindow.getAllWindows().length === 0) {
+		createSplashWindow();
 		void createWindow();
 	}
 });

@@ -10,7 +10,15 @@ electron_1.ipcMain.handle("ping", async () => {
 });
 let splashWindow = null;
 let mainWindow = null;
-//创建闪屏窗口
+function getSplashHtmlPath() {
+    return node_path_1.default.join(electron_1.app.getAppPath(), "src", "splash.html");
+}
+function getRendererIndexPath() {
+    return node_path_1.default.join(electron_1.app.getAppPath(), "renderer", "dist", "index.html");
+}
+function getDevServerUrl() {
+    return process.env.VITE_DEV_SERVER_URL;
+}
 function createSplashWindow() {
     splashWindow = new electron_1.BrowserWindow({
         width: 400,
@@ -24,29 +32,23 @@ function createSplashWindow() {
             nodeIntegration: false,
         },
     });
-    // 加载闪屏页面（你可以自己做动画）
-    splashWindow.loadFile(node_path_1.default.join(__dirname, "..", "src", "splash.html"));
-    splashWindow.center(); // 居中
-    // 闪屏关闭后清空引用
+    void splashWindow.loadFile(getSplashHtmlPath());
+    splashWindow.center();
     splashWindow.on("closed", () => {
         splashWindow = null;
     });
 }
-//创建主窗口
 async function createWindow() {
-    const preloadPath = node_path_1.default.join(__dirname, "preload.js");
-    const indexPath = node_path_1.default.join(__dirname, "..", "renderer", "dist", "index.html");
     mainWindow = new electron_1.BrowserWindow({
         width: 1100,
         height: 800,
-        show: false, //先不显示
+        show: false,
         webPreferences: {
-            preload: preloadPath,
+            preload: node_path_1.default.join(__dirname, "preload.js"),
             contextIsolation: true,
             nodeIntegration: false,
         },
     });
-    // 先绑定事件，再 load；否则 did-finish-load 可能已触发导致永远不 show/不关 splash
     let didFinish = false;
     const fallbackTimer = setTimeout(() => {
         if (didFinish)
@@ -66,21 +68,21 @@ async function createWindow() {
                 splashWindow.close();
         }, 2000);
     });
-    const devUrl = process.env.VITE_DEV_SERVER_URL;
+    const devUrl = getDevServerUrl();
     if (devUrl) {
         await mainWindow.loadURL(devUrl);
         mainWindow.webContents.openDevTools({ mode: "detach" });
     }
     else {
-        await mainWindow.loadFile(indexPath);
+        await mainWindow.loadFile(getRendererIndexPath());
     }
     mainWindow.on("closed", () => {
         mainWindow = null;
     });
 }
 electron_1.app.whenReady().then(() => {
-    createSplashWindow(); // 先启动闪屏
-    void createWindow(); // 再创建主窗口
+    createSplashWindow();
+    void createWindow();
 });
 electron_1.app.on("window-all-closed", () => {
     if (process.platform !== "darwin")
@@ -88,6 +90,7 @@ electron_1.app.on("window-all-closed", () => {
 });
 electron_1.app.on("activate", () => {
     if (electron_1.BrowserWindow.getAllWindows().length === 0) {
+        createSplashWindow();
         void createWindow();
     }
 });

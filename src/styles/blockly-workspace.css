@@ -1,0 +1,63 @@
+/* Blockly 画布区域：容器、工作区尺寸、运行/停止按钮 */
+
+.blockly-root {
+	height: 100%;
+	display: flex;
+	flex-direction: row;
+	position: relative;
+}
+
+.blockly-workspace-container {
+	flex: 1;
+	min-height: 0;
+	background: #fff;
+	box-shadow: 0 4px 12px rgba(15, 12, 55, 0.06);
+	padding-left: 0;
+	overflow: hidden;
+}
+
+.blockly-workspace {
+	width: 100%;
+	height: 100%;
+}
+
+/* 运行 / 停止按钮浮层 */
+
+.blockly-runbar {
+	position: absolute;
+	right: 20px;
+	bottom: 20px;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	z-index: 1;
+}
+
+.blockly-run-btn {
+	width: 44px;
+	height: 44px;
+	border-radius: 22px;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.blockly-play-btn {
+	background: #ffbf00;
+	color: #ffffff;
+}
+
+.blockly-stop-btn {
+	background: #d0d2dc;
+	color: #555970;
+}
+
+.blockly-stop-btn:disabled {
+	opacity: 0.5;
+	cursor: default;
+	box-shadow: none;
+}

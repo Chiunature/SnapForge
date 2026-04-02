@@ -1,0 +1,70 @@
+/* 自定义积木分类侧边栏 */
+
+.cat-toolbar {
+	width: 100px;
+	flex-shrink: 0;
+	background: #ffffff;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+/* 分类按钮 */
+.cat-item {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	padding: 0 12px;
+	margin: 5px 0;
+	min-height: 40px;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	text-align: left;
+	position: relative;
+}
+
+.cat-item:not(.cat-item--active):hover {
+	background: #cecece4b;
+}
+
+.cat-item.cat-item--active:hover {
+	background: var(--cat-color, #888);
+}
+
+.cat-item--active {
+	background: var(--cat-color, #888);
+	box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.45);
+}
+
+/* 分类文字 */
+.cat-label {
+	font-size: 12px;
+	/* font-weight: 600; */
+	color: #4a596f;
+	white-space: nowrap; 
+	letter-spacing: 0.03em;
+	line-height: 1;
+}
+
+.cat-item--active .cat-label {
+	color: #ffffff;
+}
+.cat-icon {
+	width: 20px;
+	height: 20px;
+	/* border: 1px solid rgba(0, 0, 0, 0.3); */
+	background: #ffffff;
+}
+.cat-item--active .cat-icon {
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 5%;
+	transform: scale(1.2);
+	box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
+	transition: all 0.2s ease;
+	transform-origin: center;
+	transform-box: fill-box;
+}
