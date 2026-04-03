@@ -1,6 +1,7 @@
-import type * as BlocklyType from "blockly";
-import { getDropdownField, getNumberField } from "../fieldFactories";
 import { blockTexts } from "../blockTexts";
+import { createDropdownFieldConfig, createNumberFieldConfig } from "../fieldFactories";
+import type * as BlocklyType from "blockly";
+import { createBlockDefinition, type JsonBlockDefinition, registerJsonBlocks } from "../jsonBlockDefinition";
 import { type DropdownOption } from "../slotTypes";
 
 const PORT_OPTIONS: DropdownOption[] = [
@@ -10,39 +11,38 @@ const PORT_OPTIONS: DropdownOption[] = [
 	["D", "D"],
 ];
 
+const MOTOR_BLOCK_DEFINITIONS: JsonBlockDefinition[] = [
+	createBlockDefinition({
+		type: "motor_run",
+		message0: `${blockTexts.motor_run.title} %1 ${blockTexts.motor_run.speedPrefix} %2 ${blockTexts.motor_run.speedSuffix}`,
+		args0: [
+			createDropdownFieldConfig("PORT", PORT_OPTIONS),
+			createNumberFieldConfig("SPEED", 50, -100, 100, 10),
+		],
+		previousStatement: null,
+		nextStatement: null,
+		inputsInline: true,
+		style: "motor_blocks",
+		classes: ["snapforge-block--motor", "snapforge-block--compact"],
+	}),
+	createBlockDefinition({
+		type: "motor_stop",
+		message0: `${blockTexts.motor_stop.title} %1 ${blockTexts.motor_stop.stopText}`,
+		args0: [createDropdownFieldConfig("PORT", PORT_OPTIONS)],
+		previousStatement: null,
+		nextStatement: null,
+		inputsInline: true,
+		style: "motor_blocks",
+		classes: ["snapforge-block--motor", "snapforge-block--subtle"],
+	}),
+];
+
 export function registerMotorBlocks(args: {
 	Blockly: typeof BlocklyType;
 	javascriptGenerator: typeof import("blockly/javascript").javascriptGenerator;
 }) {
 	const { Blockly, javascriptGenerator } = args;
-
-	(Blockly as any).Blocks.motor_run = {
-		init() {
-			this.appendDummyInput()
-				.appendField(blockTexts.motor_run.title)
-				.appendField(getDropdownField(PORT_OPTIONS), "PORT")
-				.appendField(blockTexts.motor_run.speedPrefix)
-				.appendField(getNumberField(50, -100, 100, 10), "SPEED")
-				.appendField(blockTexts.motor_run.speedSuffix);
-
-			this.setPreviousStatement(true, null);
-			this.setNextStatement(true, null);
-			this.setColour("#4c97ff");
-		},
-	};
-
-	(Blockly as any).Blocks.motor_stop = {
-		init() {
-			this.appendDummyInput()
-				.appendField(blockTexts.motor_stop.title)
-				.appendField(getDropdownField(PORT_OPTIONS), "PORT")
-				.appendField(blockTexts.motor_stop.stopText);
-
-			this.setPreviousStatement(true, null);
-			this.setNextStatement(true, null);
-			this.setColour("#4c97ff");
-		},
-	};
+	registerJsonBlocks(Blockly, MOTOR_BLOCK_DEFINITIONS);
 
 	javascriptGenerator.forBlock.motor_run = (block: any) => {
 		const port = block.getFieldValue("PORT");

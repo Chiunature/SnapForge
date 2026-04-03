@@ -10,11 +10,13 @@ electron_1.ipcMain.handle("ping", async () => {
 });
 let splashWindow = null;
 let mainWindow = null;
+/** 主进程编译在 electron-dist/，静态资源在项目根，不能依赖 app.getAppPath()（开发时往往等于 electron-dist） */
+const projectRoot = node_path_1.default.join(__dirname, "..");
 function getSplashHtmlPath() {
-    return node_path_1.default.join(electron_1.app.getAppPath(), "src", "splash.html");
+    return node_path_1.default.join(projectRoot, "src", "splash.html");
 }
 function getRendererIndexPath() {
-    return node_path_1.default.join(electron_1.app.getAppPath(), "renderer", "dist", "index.html");
+    return node_path_1.default.join(projectRoot, "renderer", "dist", "index.html");
 }
 function getDevServerUrl() {
     return process.env.VITE_DEV_SERVER_URL;

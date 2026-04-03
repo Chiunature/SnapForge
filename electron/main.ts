@@ -8,12 +8,15 @@ ipcMain.handle("ping", async () => {
 let splashWindow: BrowserWindow | null = null;
 let mainWindow: BrowserWindow | null = null;
 
+/** 主进程编译在 electron-dist/，静态资源在项目根，不能依赖 app.getAppPath()（开发时往往等于 electron-dist） */
+const projectRoot = path.join(__dirname, "..");
+
 function getSplashHtmlPath() {
-	return path.join(app.getAppPath(), "src", "splash.html");
+	return path.join(projectRoot, "src", "splash.html");
 }
 
 function getRendererIndexPath() {
-	return path.join(app.getAppPath(), "renderer", "dist", "index.html");
+	return path.join(projectRoot, "renderer", "dist", "index.html");
 }
 
 function getDevServerUrl() {

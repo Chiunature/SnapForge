@@ -21,6 +21,57 @@
 	height: 100%;
 }
 
+/* JSON 积木定义里的 `classes` 会挂到块根 SVG 组上，适合在这里做少量视觉分层。 */
+.blocklySvg .snapforge-block--size {
+	transform: scale(0.7);
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
+.blocklySvg .snapforge-block--event .blocklyPath {
+	filter: drop-shadow(0 3px 8px rgba(255, 191, 0, 0.25));
+}
+
+.blocklySvg .snapforge-block--event .blocklyText {
+	font-weight: 600;
+	letter-spacing: 0.2px;
+}
+
+.blocklySvg .snapforge-block--motor .blocklyPath {
+	stroke: rgba(20, 54, 102, 0.24);
+	stroke-width: 1.5px;
+}
+
+.blocklySvg .snapforge-block--light .blocklyPath {
+	filter: drop-shadow(0 2px 6px rgba(15, 189, 140, 0.18));
+}
+
+.blocklySvg .snapforge-block--sound .blocklyPath {
+	filter: drop-shadow(0 3px 8px rgba(214, 90, 196, 0.2));
+}
+
+.blocklySvg .snapforge-block--sound .blocklyText {
+	font-weight: 600;
+}
+
+.blocklySvg .snapforge-block--sensor .blocklyPath {
+	stroke: rgba(44, 95, 119, 0.18);
+	stroke-width: 1px;
+}
+
+.blocklySvg .snapforge-block--sensor .blocklyText {
+	letter-spacing: 0.15px;
+}
+
+.blocklySvg .snapforge-block--compact .blocklyText {
+	font-size: 13px;
+	word-spacing: 1px;
+}
+
+.blocklySvg .snapforge-block--subtle {
+	opacity: 0.92;
+}
+
 /* 运行 / 停止按钮浮层 */
 
 .blockly-runbar {

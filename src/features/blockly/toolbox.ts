@@ -1,19 +1,23 @@
 import * as Blockly from "blockly";
 
+/**
+ * Blockly 12 的 JSON 分类项类型为 `StaticCategoryInfo` / `DynamicCategoryInfo`，
+ * 其中用于 `getToolboxItemById(...)` 的字段名是 **`id`**，不是旧版文档里的 `toolboxitemid`。
+ */
 export function createBlocklyToolbox(): Blockly.utils.toolbox.ToolboxDefinition {
 	return {
 		kind: "categoryToolbox",
 		contents: [
 			{
 				kind: "category",
-				toolboxitemid: "事件",
+				id: "events",
 				name: "事件",
 				categorystyle: "event_category",
 				contents: [{ kind: "block", type: "event_when_started" }],
 			},
 			{
 				kind: "category",
-				toolboxitemid: "电机",
+				id: "motors",
 				name: "电机",
 				categorystyle: "motor_category",
 				contents: [
@@ -23,21 +27,21 @@ export function createBlocklyToolbox(): Blockly.utils.toolbox.ToolboxDefinition 
 			},
 			{
 				kind: "category",
-				toolboxitemid: "灯光",
+				id: "lights",
 				name: "灯光",
 				categorystyle: "light_category",
 				contents: [{ kind: "block", type: "light_matrix_show" }],
 			},
 			{
 				kind: "category",
-				toolboxitemid: "声音",
+				id: "sounds",
 				name: "声音",
 				categorystyle: "sound_category",
 				contents: [{ kind: "block", type: "sound_play_tone" }],
 			},
 			{
 				kind: "category",
-				toolboxitemid: "传感器",
+				id: "sensors",
 				name: "传感器",
 				categorystyle: "sensor_category",
 				contents: [
@@ -47,7 +51,7 @@ export function createBlocklyToolbox(): Blockly.utils.toolbox.ToolboxDefinition 
 			},
 			{
 				kind: "category",
-				toolboxitemid: "控制",
+				id: "controls",
 				name: "控制",
 				categorystyle: "control_category",
 				contents: [
@@ -59,7 +63,7 @@ export function createBlocklyToolbox(): Blockly.utils.toolbox.ToolboxDefinition 
 			},
 			{
 				kind: "category",
-				toolboxitemid: "运算",
+				id: "operators",
 				name: "运算",
 				categorystyle: "operators_category",
 				contents: [
@@ -74,14 +78,14 @@ export function createBlocklyToolbox(): Blockly.utils.toolbox.ToolboxDefinition 
 			},
 			{
 				kind: "category",
-				toolboxitemid: "变量",
+				id: "variables",
 				name: "变量",
 				categorystyle: "variables_category",
 				custom: "VARIABLE",
 			},
 			{
 				kind: "category",
-				toolboxitemid: "列表",
+				id: "lists",
 				name: "列表",
 				categorystyle: "variables_category",
 				contents: [

@@ -8,9 +8,17 @@ import { registerSensorBlocks } from "./sections/sensor";
 
 let blocksRegistered = false;
 
+const blockRegistrars = [
+	registerEventBlocks,
+	registerMotorBlocks,
+	registerLightBlocks,
+	registerSoundBlocks,
+	registerSensorBlocks,
+];
+
 // Blockly 的积木注册入口：
-// - 把“每个分类/积木”的定义拆到独立模块里，避免一个 blocks.ts 越写越大
-// - 由这里统一注册 Blockly.Blocks 和 javascriptGenerator.forBlock
+// - 各 section 内部用 defineBlocksWithJsonArray 注册 JSON 积木定义
+// - 这里统一串联所有自定义块定义与 javascriptGenerator.forBlock
 export function registerBlocklyBlocks() {
 	if (blocksRegistered) return;
 
@@ -19,12 +27,9 @@ export function registerBlocklyBlocks() {
 		console.warn("[SnapForge] javascriptGenerator forBlock 未就绪");
 	}
 
-	registerEventBlocks({ Blockly, javascriptGenerator });
-	registerMotorBlocks({ Blockly, javascriptGenerator });
-	registerLightBlocks({ Blockly, javascriptGenerator });
-	registerSoundBlocks({ Blockly, javascriptGenerator });
-	registerSensorBlocks({ Blockly, javascriptGenerator });
+	for (const registerBlocks of blockRegistrars) {
+		registerBlocks({ Blockly, javascriptGenerator });
+	}
 
 	blocksRegistered = true;
 }
-

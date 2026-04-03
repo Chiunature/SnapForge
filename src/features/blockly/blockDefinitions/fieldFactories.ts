@@ -1,28 +1,53 @@
-import * as Blockly from "blockly";
+import type {
+	JsonDropdownFieldConfig,
+	JsonImageFieldConfig,
+	JsonNumberFieldConfig,
+} from "./jsonBlockDefinition";
 import { type DropdownOption, type DropdownSlotSpec, type NumberSlotSpec } from "./slotTypes";
 import { type IconSpec } from "./iconTypes";
 
-// 保留你原本的“函数式接口”，方便你后续不大改原有调用方式。
-export function getDropdownField(options: DropdownOption[]) {
-	return new (Blockly as any).FieldDropdown(options);
+export function createDropdownFieldConfig(fieldName: string, options: DropdownOption[]): JsonDropdownFieldConfig {
+	return {
+		type: "field_dropdown",
+		name: fieldName,
+		options,
+	} as const;
 }
 
-export function getNumberField(defaultValue: number, min?: number, max?: number, precision?: number) {
-	return new (Blockly as any).FieldNumber(defaultValue, min, max, precision);
+export function createNumberFieldConfig(
+	fieldName: string,
+	defaultValue: number,
+	min?: number,
+	max?: number,
+	precision?: number,
+): JsonNumberFieldConfig {
+	return {
+		type: "field_number",
+		name: fieldName,
+		value: defaultValue,
+		min,
+		max,
+		precision,
+	} as const;
 }
 
-// 使用 slot spec 生成字段（更适合做成配置/自定义文本/插槽扩展）。
-export function createDropdownField(slot: DropdownSlotSpec) {
-	return getDropdownField(slot.options);
+// 使用 slot spec 生成 JSON 字段配置，便于后续按配置声明块结构。
+export function createDropdownFieldConfigFromSlot(slot: DropdownSlotSpec) {
+	return createDropdownFieldConfig(slot.fieldName, slot.options);
 }
 
-export function createNumberField(slot: NumberSlotSpec) {
-	return getNumberField(slot.defaultValue, slot.min, slot.max, slot.precision);
+export function createNumberFieldConfigFromSlot(slot: NumberSlotSpec) {
+	return createNumberFieldConfig(slot.fieldName, slot.defaultValue, slot.min, slot.max, slot.precision);
 }
 
-export function createIconField(icon: IconSpec) {
-	// Blockly 的 FieldImage 在类型上不一定是公开的，这里用 any 兼容。
-	// 插槽：把图片作为 block 内字段插进去。
-	return new (Blockly as any).FieldImage(icon.src, icon.width, icon.height, icon.alt ?? "*");
+export function createIconFieldConfig(fieldName: string, icon: IconSpec): JsonImageFieldConfig {
+	return {
+		type: "field_image",
+		name: fieldName,
+		src: icon.src,
+		width: icon.width,
+		height: icon.height,
+		alt: icon.alt ?? "*",
+	} as const;
 }
 

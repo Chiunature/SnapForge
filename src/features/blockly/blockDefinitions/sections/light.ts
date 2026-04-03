@@ -1,6 +1,7 @@
-import type * as BlocklyType from "blockly";
-import { getDropdownField } from "../fieldFactories";
 import { blockTexts } from "../blockTexts";
+import { createDropdownFieldConfig } from "../fieldFactories";
+import type * as BlocklyType from "blockly";
+import { createBlockDefinition, type JsonBlockDefinition, registerJsonBlocks } from "../jsonBlockDefinition";
 import { type DropdownOption } from "../slotTypes";
 
 const PATTERN_OPTIONS: DropdownOption[] = [
@@ -9,23 +10,25 @@ const PATTERN_OPTIONS: DropdownOption[] = [
 	["箭头", "ARROW"],
 ];
 
+const LIGHT_BLOCK_DEFINITIONS: JsonBlockDefinition[] = [
+	createBlockDefinition({
+		type: "light_matrix_show",
+		message0: `${blockTexts.light_matrix_show.title} %1`,
+		args0: [createDropdownFieldConfig("PATTERN", PATTERN_OPTIONS)],
+		previousStatement: null,
+		nextStatement: null,
+		inputsInline: true,
+		style: "light_blocks",
+		classes: ["snapforge-block--light", "snapforge-block--compact"],
+	}),
+];
+
 export function registerLightBlocks(args: {
 	Blockly: typeof BlocklyType;
 	javascriptGenerator: typeof import("blockly/javascript").javascriptGenerator;
 }) {
 	const { Blockly, javascriptGenerator } = args;
-
-	(Blockly as any).Blocks.light_matrix_show = {
-		init() {
-			this.appendDummyInput()
-				.appendField(blockTexts.light_matrix_show.title)
-				.appendField(getDropdownField(PATTERN_OPTIONS), "PATTERN");
-
-			this.setPreviousStatement(true, null);
-			this.setNextStatement(true, null);
-			this.setColour("#0fbd8c");
-		},
-	};
+	registerJsonBlocks(Blockly, LIGHT_BLOCK_DEFINITIONS);
 
 	javascriptGenerator.forBlock.light_matrix_show = (block: any) => {
 		const pattern = block.getFieldValue("PATTERN");
