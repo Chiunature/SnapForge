@@ -75,11 +75,19 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 	const workspaceRef = useRef<HTMLDivElement | null>(null);
 	const workspaceInstanceRef = useRef<Blockly.WorkspaceSvg | null>(null);
 	const saveTimerRef = useRef<number | null>(null);
+	const manualSelectLockRef = useRef<{ name: string; until: number } | null>(null);
 
 	// useState: 状态管理，返回[当前值, 更新函数]
 	const [isRunning, setIsRunning] = useState(false); // 是否正在运行
 	const [activeCategory, setActiveCategory] = useState(""); // 当前选中的积木分类
 	const [workspace, setWorkspace] = useState<Blockly.WorkspaceSvg | null>(null); // Blockly工作区实例
+
+	const handleToolbarSelect = (name: string, source = "toolbar-click") => {
+		const lockMs = 450;
+		manualSelectLockRef.current = { name, until: Date.now() + lockMs };
+		console.log("[SnapForge][CategorySync] toolbar select", { name, source, lockMs, prev: activeCategory });
+		setActiveCategory((prev) => (prev === name ? prev : name));
+	};
 
 	// useEffect：挂载时创建 Blockly 工作区；卸载时 dispose、解绑监听（依赖 projectId 时整页换作品会重来一遍）
 	useEffect(() => {
@@ -121,15 +129,15 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 			trashcan: false,
 			sounds: false,
 			grid: {
-				spacing: 20,
-				length: 3,
-				colour: "#e0e0e0",
+				spacing: 40,
+				length: 40,
+				colour: "#c5e6f7",
 				snap: true,
 			},
 			zoom: {
 				controls: true,
 				wheel: true,
-				startScale: 1,
+				startScale: 0.7,
 				maxScale: 2,
 				minScale: 0.5,
 			},
@@ -153,8 +161,28 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 		// 包装一层以便 Blockly 内部切换分类时，React 侧边栏 `activeCategory` 保持同步。
 		if (originalSelectCategoryByName) {
 			toolbox.selectCategoryByName = (name: string) => {
+				const lock = manualSelectLockRef.current;
+				const now = Date.now();
+				const isLocked = Boolean(lock && now <= lock.until);
+				const canOverride = !isLocked || lock?.name === name;
+
+				console.log("[SnapForge][CategorySync] toolbox.selectCategoryByName", {
+					name,
+					prevActive: activeCategory,
+					lockName: lock?.name ?? null,
+					lockRemainingMs: lock ? Math.max(0, lock.until - now) : 0,
+					canOverride,
+				});
+
 				originalSelectCategoryByName(name);
 				if (CATEGORIES.some((c) => c.name === name)) {
+					if (!canOverride) {
+						console.warn("[SnapForge][CategorySync] ignore transient category change while locked", {
+							incoming: name,
+							lockedTo: lock?.name,
+						});
+						return;
+					}
 					setActiveCategory((prev) => (prev === name ? prev : name));
 				}
 			};
@@ -177,6 +205,7 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 			if (firstItem) {
 				toolbox.setSelectedItem(firstItem);
 				setActiveCategory(firstCategory);
+				console.log("[SnapForge][CategorySync] init first category", { firstCategory });
 			}
 		}
 
@@ -239,6 +268,7 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 			ws.dispose();
 			workspaceInstanceRef.current = null;
 			setWorkspace(null);
+			manualSelectLockRef.current = null;
 		};
 	}, [projectId]);
 
@@ -259,7 +289,7 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 	return (
 		<div className="blockly-root">
 			{/* CategoryToolbar：用户点击分类 → handleClick 内 toolbox.setSelectedItem → 连续工具箱滚动 flyout；activeCategory 只负责高亮 */}
-			<CategoryToolbar workspace={workspace} activeCategory={activeCategory} onSelect={setActiveCategory} />
+			<CategoryToolbar workspace={workspace} activeCategory={activeCategory} onSelect={handleToolbarSelect} />
 
 			<div className="blockly-workspace-container">
 				{/* Blockly.inject 会把 SVG 画布挂到这个 div 下 */}

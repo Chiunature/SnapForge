@@ -35,16 +35,9 @@ export const scratchLikeTheme = Blockly.Theme.defineTheme("scratchLike", {
 		},
 	},
 	componentStyles: {
-		workspaceBackgroundColour: "#f2f3f7",
-		toolboxBackgroundColour: "#ffffff",
-		toolboxForegroundColour: "#575e75",
-		flyoutBackgroundColour: "#f7f8fc",
-		flyoutForegroundColour: "#575e75",
-		flyoutOpacity: 1,
-		scrollbarColour: "#c6cad7",
-		scrollbarOpacity: 0.7,
-		insertionMarkerColour: "#000000",
-		insertionMarkerOpacity: 0.2,
+		workspaceBackgroundColour: "#f2f3f7", //工作区背景色
+		insertionMarkerColour: "#000000", //插入标记颜色
+		insertionMarkerOpacity: 0.2, //插入标记透明度
 	},
 	categoryStyles: {
 		event_category: { colour: "#ffbf00" },

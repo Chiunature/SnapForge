@@ -19,14 +19,11 @@ const LIGHT_BLOCK_DEFINITIONS: JsonBlockDefinition[] = [
 		nextStatement: null,
 		inputsInline: true,
 		style: "light_blocks",
-		classes: ["snapforge-block--light", "snapforge-block--compact"],
+		classes: ["snapforge-block--light"],
 	}),
 ];
 
-export function registerLightBlocks(args: {
-	Blockly: typeof BlocklyType;
-	javascriptGenerator: typeof import("blockly/javascript").javascriptGenerator;
-}) {
+export function registerLightBlocks(args: { Blockly: typeof BlocklyType; javascriptGenerator: typeof import("blockly/javascript").javascriptGenerator }) {
 	const { Blockly, javascriptGenerator } = args;
 	registerJsonBlocks(Blockly, LIGHT_BLOCK_DEFINITIONS);
 
@@ -35,4 +32,3 @@ export function registerLightBlocks(args: {
 		return `showMatrixPattern("${pattern}");\n`;
 	};
 }
-

@@ -10,7 +10,6 @@
 .blockly-workspace-container {
 	flex: 1;
 	min-height: 0;
-	background: #fff;
 	box-shadow: 0 4px 12px rgba(15, 12, 55, 0.06);
 	padding-left: 0;
 	overflow: hidden;
@@ -21,19 +20,14 @@
 	height: 100%;
 }
 
-/* JSON 积木定义里的 `classes` 会挂到块根 SVG 组上，适合在这里做少量视觉分层。 */
-.blocklySvg .snapforge-block--size {
-	transform: scale(0.7);
-	transform-box: fill-box;
-	transform-origin: center;
-}
-
 .blocklySvg .snapforge-block--event .blocklyPath {
+	/* 这个是连接在event事件积木块的那些积木块的阴影效果 */
 	filter: drop-shadow(0 3px 8px rgba(255, 191, 0, 0.25));
 }
 
 .blocklySvg .snapforge-block--event .blocklyText {
-	font-weight: 600;
+	/* 给event事件积木块文字加样式 */
+	/* font-weight: 600; */
 	letter-spacing: 0.2px;
 }
 
@@ -61,11 +55,6 @@
 
 .blocklySvg .snapforge-block--sensor .blocklyText {
 	letter-spacing: 0.15px;
-}
-
-.blocklySvg .snapforge-block--compact .blocklyText {
-	font-size: 13px;
-	word-spacing: 1px;
 }
 
 .blocklySvg .snapforge-block--subtle {

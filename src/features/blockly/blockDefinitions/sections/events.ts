@@ -9,7 +9,7 @@ const EVENT_BLOCK_DEFINITIONS: JsonBlockDefinition[] = [
 		nextStatement: null,
 		style: "event_blocks",
 		// 事件块用 classes 把“更显眼的帽子块”视觉交给 CSS，后续新增同类块可复用。
-		classes: ["snapforge-block--event", "snapforge-block--size"],
+		classes: ["snapforge-block--event"],
 		tooltip: blockTexts.event_when_started.tooltip,
 	}),
 ];

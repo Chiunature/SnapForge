@@ -15,7 +15,7 @@ const icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9];
 interface CategoryToolbarProps {
 	workspace: Blockly.WorkspaceSvg | null;
 	activeCategory: string;
-	onSelect: (name: string) => void;
+	onSelect: (name: string, source?: string) => void;
 }
 
 export function CategoryToolbar({ workspace, activeCategory, onSelect }: CategoryToolbarProps) {
@@ -28,15 +28,22 @@ export function CategoryToolbar({ workspace, activeCategory, onSelect }: Categor
 		// continuous-toolbox 点击分类应使用 setSelectedItem，
 		// 才会触发 updateFlyout_ 并滚动到目标分类位置。
 		const categoryItem = toolbox.getCategoryByName?.(name) ?? toolbox.getToolboxItemById?.(name) ?? null;
+		console.log("[SnapForge][CategoryToolbar] click", {
+			target: name,
+			activeCategory,
+			hasCategoryItem: Boolean(categoryItem),
+			hasSetSelectedItem: typeof toolbox.setSelectedItem === "function",
+		});
 		if (categoryItem && typeof toolbox.setSelectedItem === "function") {
 			toolbox.setSelectedItem(categoryItem);
 		} else {
 			// 最后降级：按索引选中
 			const index = CATEGORIES.findIndex((c) => c.name === name);
+			console.warn("[SnapForge][CategoryToolbar] fallback selectItemByPosition", { target: name, index });
 			if (index >= 0) toolbox.selectItemByPosition?.(index);
 		}
 
-		onSelect(name);
+		onSelect(name, "toolbar-click");
 	};
 
 	return (
