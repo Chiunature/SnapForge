@@ -17,11 +17,11 @@ import { ContinuousFlyout, registerContinuousToolbox } from "@blockly/continuous
 // 把当前工作区里的积木转成 JavaScript 字符串（运行按钮用）
 import { javascriptGenerator } from "blockly/javascript";
 // 注册本项目自定义积木（定义在 blockDefinitions/ 下）
-import { registerBlocklyBlocks } from "./blocks";
+import { registerBlocklyBlocks } from "../definitions";
 // 左侧分类栏：内部会调 workspace.getToolbox().setSelectedItem(...) 切换分类
-import { CategoryToolbar } from "./CategoryToolbar";
+import { CategoryToolbar } from "../sidebar";
 // 与 toolbox.ts 里分类 name 一致，用于判断侧边栏高亮与 Blockly 分类是否对应
-import { CATEGORIES } from "./categories";
+import { CATEGORIES } from "../sidebar";
 // 覆盖 Blockly 的对话框（prompt/confirm 等），避免浏览器默认框在 Electron 里体验不一致
 import { setupBlocklyDialog } from "./dialog";
 // 按 projectId 读写本地保存的积木 XML
@@ -29,7 +29,9 @@ import { clearProjectBlocks, loadProjectBlocks, saveProjectBlocks } from "./stor
 // 工作区主题（含 startHats 等）
 import { scratchLikeTheme } from "./theme";
 // 生成 toolbox JSON，传给 inject 的 toolbox 选项
-import { createBlocklyToolbox } from "./toolbox";
+import { createBlocklyToolbox } from "../flyout";
+
+import { setupFlyoutBehavior } from "../flyout/setupFlyoutBehavior";
 
 // 定义组件的属性类型：接收一个项目ID
 interface BlocklyWorkspaceProps {
@@ -148,6 +150,8 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 			},
 		});
 
+		const cleanupFlyoutBehavior = setupFlyoutBehavior(ws);
+
 		workspaceInstanceRef.current = ws;
 		// 传给 CategoryToolbar：拿到 toolbox 做 setSelectedItem；状态变会触发子组件重渲染
 		setWorkspace(ws);
@@ -264,6 +268,7 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 			}
 
 			ws.removeChangeListener(handleWorkspaceChange);
+			cleanupFlyoutBehavior?.();
 			// dispose：释放 DOM、监听、快捷键等；Must 调，否则泄漏与重复 inject 会异常
 			ws.dispose();
 			workspaceInstanceRef.current = null;

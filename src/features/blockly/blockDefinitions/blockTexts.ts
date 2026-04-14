@@ -31,4 +31,3 @@ export const blockTexts = {
 		pressedText: "已按下",
 	},
 } as const;
-

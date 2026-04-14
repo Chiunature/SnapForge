@@ -1,14 +1,14 @@
 import * as Blockly from "blockly";
 import { CATEGORIES } from "./categories";
-import icon1 from "../../assets/icon/toolbox-1.svg";
-import icon2 from "../../assets/icon/toolbox-2.svg";
-import icon3 from "../../assets/icon/toolbox-3.svg";
-import icon4 from "../../assets/icon/toolbox-4.svg";
-import icon5 from "../../assets/icon/toolbox-5.svg";
-import icon6 from "../../assets/icon/toolbox-6.svg";
-import icon7 from "../../assets/icon/toolbox-7.svg";
-import icon8 from "../../assets/icon/toolbox-8.svg";
-import icon9 from "../../assets/icon/toolbox-9.svg";
+import icon1 from "../../../assets/icon/toolbox-1.svg";
+import icon2 from "../../../assets/icon/toolbox-2.svg";
+import icon3 from "../../../assets/icon/toolbox-3.svg";
+import icon4 from "../../../assets/icon/toolbox-4.svg";
+import icon5 from "../../../assets/icon/toolbox-5.svg";
+import icon6 from "../../../assets/icon/toolbox-6.svg";
+import icon7 from "../../../assets/icon/toolbox-7.svg";
+import icon8 from "../../../assets/icon/toolbox-8.svg";
+import icon9 from "../../../assets/icon/toolbox-9.svg";
 
 const icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9];
 

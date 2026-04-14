@@ -1,5 +1,5 @@
 import { Navigate, useNavigate, useParams } from "react-router-dom";
-import { BlocklyWorkspace } from "../features/blockly/BlocklyWorkspace";
+import { BlocklyWorkspace } from "../features/blockly/workspace";
 import { getProjectById } from "../features/projects/repository";
 
 interface ProjectEditorPageProps {

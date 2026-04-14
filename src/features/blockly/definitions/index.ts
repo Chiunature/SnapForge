@@ -1,0 +1,1 @@
+export { registerBlocklyBlocks } from "../blockDefinitions";

@@ -1,1 +1,1 @@
-export { BlocklyWorkspace } from "./BlocklyWorkspace";
+export { BlocklyWorkspace } from "./workspace";
