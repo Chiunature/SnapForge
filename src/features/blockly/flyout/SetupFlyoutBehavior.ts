@@ -7,12 +7,19 @@ export const setupFlyoutBehavior = (workspace: Blockly.WorkspaceSvg): (() => voi
 	const flyout = toolbox?.getFlyout?.(); //调用工具箱对象的方法，获取飞出栏对象
 	if (!flyout || (flyout as any).__snapforge_widthClamped) return; //如果飞出栏对象不存在或者已经被限制宽度，则返回
 
+	type MouseHandlers = {
+		handleMouseEnter: (e: MouseEvent) => void;
+		handleMouseLeave: (e: MouseEvent) => void;
+	};
+
 	const originalGetWidth = typeof flyout.getWidth === "function" ? flyout.getWidth.bind(flyout) : null; //让this指向永远绑定flyout对象，并且保存，避免其他变量调用不正确
 	if (!originalGetWidth) return; //如果originalGetWidth不存在，则退出
 	const widthLimit = FLYOUT_DEFAULT_MAX_WIDTH_PX;
 
 	(flyout as any).__snapforge_widthClamped = true; //标记该方法已经执行过
 	flyout.getWidth = () => Math.min(originalGetWidth(), widthLimit); //重写getWidth方法，调用原始方法获取原始宽度 → 与限制值比较 → 返回较小的那个
+	let attachedFlyoutSvg: HTMLElement | null = null; //保存flyoutSvg元素,避免在dom树中找不到
+	let attachedHandlers: MouseHandlers | null = null; //保存鼠标事件函数,避免在dom树中找不到
 
 	/*
     鼠标事件监听
@@ -35,8 +42,10 @@ export const setupFlyoutBehavior = (workspace: Blockly.WorkspaceSvg): (() => voi
 		//添加鼠标事件
 		flyoutSvg.addEventListener("mouseenter", handleMouseEnter);
 		flyoutSvg.addEventListener("mouseleave", handleMouseLeave);
-		(flyoutSvg as any).__snapforge_mouseHandlers = { handleMouseEnter, handleMouseLeave }; //添加私有属性用来保存鼠标事件函数,方便后续清理
-
+		const handlers: MouseHandlers = { handleMouseEnter, handleMouseLeave };
+		(flyoutSvg as any).__snapforge_mouseHandlers = handlers; //添加私有属性用来保存鼠标事件函数,方便后续清理
+		attachedFlyoutSvg = flyoutSvg;
+		attachedHandlers = handlers;
 		return true;
 	};
 	//先立即绑定，如果绑定失败，等dom来
@@ -58,14 +67,18 @@ export const setupFlyoutBehavior = (workspace: Blockly.WorkspaceSvg): (() => voi
 		// 清理宽度限制标记
 		(flyout as any).__snapforge_widthClamped = false;
 		// 清理鼠标事件监听
-		const flyoutSvg = document.querySelector(".blocklyFlyout.blocklyToolboxFlyout") as HTMLElement | null;
-		const handlers = (flyoutSvg as any).__snapforge_mouseHandlers;
+		const flyoutSvg = attachedFlyoutSvg;
+		const handlers = attachedHandlers ?? ((flyoutSvg as any)?.__snapforge_mouseHandlers as MouseHandlers | undefined);
+		//用了变量保存flyoutSvg和handlers，避免在dom树中找不到，无论怎样都可以兜底清除鼠标事件监听
 		if (flyoutSvg && handlers) {
 			flyoutSvg.removeEventListener("mouseenter", handlers.handleMouseEnter);
 			flyoutSvg.removeEventListener("mouseleave", handlers.handleMouseLeave);
 			delete (flyoutSvg as any).__snapforge_mouseHandlers;
 			delete (flyoutSvg as any).__snapforge_mouseEventsAttached;
+			attachedFlyoutSvg = null;
+			attachedHandlers = null;
 		}
+
 		// 清理观察者
 		const observer = (flyout as any).__snapforge_observer;
 		if (observer) {

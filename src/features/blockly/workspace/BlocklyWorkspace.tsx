@@ -7,7 +7,7 @@
  * 3. 用我们自己的 CategoryToolbar 操作隐藏的 Blockly 原生 toolbox，保证飞出积木栏与侧边栏同步；
  * 4. 监听工作区变化，防抖后把积木序列化成 XML 存本地（见 storage.ts）。
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 // Blockly 核心：注入工作区、XML、事件类型、主题用到的常量等
 import * as Blockly from "blockly";
 // Blockly 自带中文文案（菜单、部分内置块等），通过 setLocale 全局生效
@@ -32,6 +32,7 @@ import { scratchLikeTheme } from "./theme";
 import { createBlocklyToolbox } from "../flyout";
 
 import { setupFlyoutBehavior } from "../flyout/SetupFlyoutBehavior";
+import { getBlocklyUiStore, useBlocklyUiStore } from "../store/useBlocklyUiStore";
 
 // 定义组件的属性类型：接收一个项目ID
 interface BlocklyWorkspaceProps {
@@ -77,23 +78,9 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 	const workspaceRef = useRef<HTMLDivElement | null>(null);
 	const workspaceInstanceRef = useRef<Blockly.WorkspaceSvg | null>(null);
 	const saveTimerRef = useRef<number | null>(null);
-	const manualSelectLockRef = useRef<{ name: string; until: number } | null>(null);
 
-	// useState: 状态管理，返回[当前值, 更新函数]
-	const [isRunning, setIsRunning] = useState(false); // 是否正在运行
-	const [activeCategory, setActiveCategory] = useState(""); // 当前选中的积木分类
-	const [workspace, setWorkspace] = useState<Blockly.WorkspaceSvg | null>(null); // Blockly工作区实例
-
-	const handleToolbarSelect = (name: string, source = "toolbar-click") => {
-		if (name === "") {
-			manualSelectLockRef.current = null;
-			setActiveCategory("");
-			return;
-		}
-		const lockMs = 450;
-		manualSelectLockRef.current = { name, until: Date.now() + lockMs };
-		setActiveCategory((prev) => (prev === name ? prev : name));
-	};
+	// 仅读取运行状态，用于按钮禁用/启用；其余 UI 状态由 CategoryToolbar 直接订阅 store
+	const isRunning = useBlocklyUiStore((s) => s.isRunning);
 
 	// useEffect：挂载时创建 Blockly 工作区；卸载时 dispose、解绑监听（依赖 projectId 时整页换作品会重来一遍）
 	useEffect(() => {
@@ -157,8 +144,8 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 		const cleanupFlyoutBehavior = setupFlyoutBehavior(ws);
 
 		workspaceInstanceRef.current = ws;
-		// 传给 CategoryToolbar：拿到 toolbox 做 setSelectedItem；状态变会触发子组件重渲染
-		setWorkspace(ws);
+		// 把工作区实例写入 store，CategoryToolbar 直接从 store 取，无需 props 透传
+		getBlocklyUiStore().setWorkspace(ws);
 
 		// getToolbox()：inject 根据 toolbox 配置创建的工具箱实例；飞出栏、分类选中态都由它驱动。
 		// 下面把原生工具箱 DOM 挤到宽度 0：视觉上只有左侧 CategoryToolbar，逻辑仍走 toolbox API。
@@ -169,7 +156,9 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 		// 包装一层以便 Blockly 内部切换分类时，React 侧边栏 `activeCategory` 保持同步。
 		if (originalSelectCategoryByName) {
 			toolbox.selectCategoryByName = (name: string) => {
-				const lock = manualSelectLockRef.current;
+				// 直接从 store 读瞬态锁，避免闭包捕获过期值
+				const { _manualSelectLock, setActiveCategory: syncCategory } = getBlocklyUiStore();
+				const lock = _manualSelectLock;
 				const now = Date.now();
 				const isLocked = Boolean(lock && now <= lock.until);
 				const canOverride = !isLocked || lock?.name === name;
@@ -183,7 +172,8 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 						});
 						return;
 					}
-					setActiveCategory((prev) => (prev === name ? prev : name));
+					const prev = getBlocklyUiStore().activeCategory;
+					if (prev !== name) syncCategory(name);
 				}
 			};
 		}
@@ -204,7 +194,7 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 			const firstItem = toolbox?.getToolboxItemById?.(firstCategory);
 			if (firstItem) {
 				toolbox.setSelectedItem(firstItem);
-				setActiveCategory(firstCategory);
+				getBlocklyUiStore().setActiveCategory(firstCategory);
 			}
 		}
 
@@ -267,8 +257,8 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 			// dispose：释放 DOM、监听、快捷键等；Must 调，否则泄漏与重复 inject 会异常
 			ws.dispose();
 			workspaceInstanceRef.current = null;
-			setWorkspace(null);
-			manualSelectLockRef.current = null;
+			// 一次性清空所有 UI 状态
+			getBlocklyUiStore().resetUi();
 		};
 	}, [projectId]);
 
@@ -278,18 +268,18 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 		// javascriptGenerator.workspaceToCode：遍历工作区积木树，按 forBlock 注册表生成代码字符串（当前仅 console，可接执行器）
 		const generatedCode = javascriptGenerator.workspaceToCode(ws);
 		console.log("[SnapForge] 运行作品", projectId, "\n", generatedCode);
-		setIsRunning(true);
+		getBlocklyUiStore().setRunning(true);
 	};
 
 	// 停止按钮的处理函数
 	const handleStop = () => {
-		setIsRunning(false);
+		getBlocklyUiStore().setRunning(false);
 	};
 
 	return (
 		<div className="blockly-root">
-			{/* CategoryToolbar：用户点击分类 → handleClick 内 toolbox.setSelectedItem → 连续工具箱滚动 flyout；activeCategory 只负责高亮 */}
-			<CategoryToolbar workspace={workspace} activeCategory={activeCategory} onSelect={handleToolbarSelect} />
+			{/* CategoryToolbar：直接从 store 读取 workspace / activeCategory，无需 props */}
+			<CategoryToolbar />
 
 			<div className="blockly-workspace-container">
 				{/* Blockly.inject 会把 SVG 画布挂到这个 div 下 */}

@@ -1,5 +1,6 @@
 import * as Blockly from "blockly";
 import { CATEGORIES } from "./categories";
+import { getBlocklyUiStore, useBlocklyUiStore } from "../store/useBlocklyUiStore";
 import icon1 from "../../../assets/icon/toolbox-1.svg";
 import icon2 from "../../../assets/icon/toolbox-2.svg";
 import icon3 from "../../../assets/icon/toolbox-3.svg";
@@ -12,27 +13,31 @@ import icon9 from "../../../assets/icon/toolbox-9.svg";
 
 const icons = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, icon9];
 
-interface CategoryToolbarProps {
-	workspace: Blockly.WorkspaceSvg | null;
-	activeCategory: string;
-	onSelect: (name: string, source?: string) => void;
-}
+export function CategoryToolbar() {
+	// 直接从 store 读取，不再依赖父组件 props 传递
+	const workspace = useBlocklyUiStore((s) => s.workspace);
+	const activeCategory = useBlocklyUiStore((s) => s.activeCategory);
 
-export function CategoryToolbar({ workspace, activeCategory, onSelect }: CategoryToolbarProps) {
 	const handleClick = (name: string) => {
 		if (!workspace) return;
 
 		const toolbox = workspace.getToolbox() as any;
 		if (!toolbox) return;
 
-		// 再次点击当前已选分类(activeCategory是表示当前高光类别)：取消选中并收起飞出栏
+		// 再次点击当前已选分类：取消选中并收起飞出栏
 		if (name === activeCategory) {
 			toolbox.getFlyout?.()?.hide?.();
 			Blockly.svgResize(workspace);
-			onSelect("", "toolbar-toggle-close");
+			// 清空锁与选中状态
+			getBlocklyUiStore().setManualSelectLock(null);
+			getBlocklyUiStore().setActiveCategory("");
 			return;
 		}
-		//获取到分类项
+
+		// 通知父组件（BlocklyWorkspace）设置手动选择锁
+		getBlocklyUiStore().setManualSelectLock({ name, until: Date.now() + 450 });
+
+		// 获取到分类项
 		const categoryItem = toolbox.getCategoryByName?.(name) ?? toolbox.getToolboxItemById?.(name) ?? null;
 		if (categoryItem && typeof toolbox.setSelectedItem === "function") {
 			toolbox.setSelectedItem(categoryItem);
@@ -43,7 +48,7 @@ export function CategoryToolbar({ workspace, activeCategory, onSelect }: Categor
 			if (index >= 0) toolbox.selectItemByPosition?.(index);
 		}
 
-		onSelect(name, "toolbar-click");
+		getBlocklyUiStore().setActiveCategory(name);
 	};
 
 	return (
