@@ -31,7 +31,7 @@ import { scratchLikeTheme } from "./theme";
 // 生成 toolbox JSON，传给 inject 的 toolbox 选项
 import { createBlocklyToolbox } from "../flyout";
 
-import { setupFlyoutBehavior } from "../flyout/setupFlyoutBehavior";
+import { setupFlyoutBehavior } from "../flyout/SetupFlyoutBehavior";
 
 // 定义组件的属性类型：接收一个项目ID
 interface BlocklyWorkspaceProps {
@@ -85,9 +85,13 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 	const [workspace, setWorkspace] = useState<Blockly.WorkspaceSvg | null>(null); // Blockly工作区实例
 
 	const handleToolbarSelect = (name: string, source = "toolbar-click") => {
+		if (name === "") {
+			manualSelectLockRef.current = null;
+			setActiveCategory("");
+			return;
+		}
 		const lockMs = 450;
 		manualSelectLockRef.current = { name, until: Date.now() + lockMs };
-		console.log("[SnapForge][CategorySync] toolbar select", { name, source, lockMs, prev: activeCategory });
 		setActiveCategory((prev) => (prev === name ? prev : name));
 	};
 
@@ -170,14 +174,6 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 				const isLocked = Boolean(lock && now <= lock.until);
 				const canOverride = !isLocked || lock?.name === name;
 
-				console.log("[SnapForge][CategorySync] toolbox.selectCategoryByName", {
-					name,
-					prevActive: activeCategory,
-					lockName: lock?.name ?? null,
-					lockRemainingMs: lock ? Math.max(0, lock.until - now) : 0,
-					canOverride,
-				});
-
 				originalSelectCategoryByName(name);
 				if (CATEGORIES.some((c) => c.name === name)) {
 					if (!canOverride) {
@@ -209,7 +205,6 @@ export function BlocklyWorkspace({ projectId }: BlocklyWorkspaceProps) {
 			if (firstItem) {
 				toolbox.setSelectedItem(firstItem);
 				setActiveCategory(firstCategory);
-				console.log("[SnapForge][CategorySync] init first category", { firstCategory });
 			}
 		}
 

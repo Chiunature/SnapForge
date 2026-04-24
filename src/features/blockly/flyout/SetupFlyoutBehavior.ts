@@ -20,18 +20,16 @@ export const setupFlyoutBehavior = (workspace: Blockly.WorkspaceSvg): (() => voi
 	const setupMouseEvents = () => {
 		const flyoutSvg = document.querySelector(".blocklyFlyout.blocklyToolboxFlyout") as HTMLElement | null;
 		if (!flyoutSvg) {
-			console.log("未找到flyoutSvg元素");
+			console.warn("未找到flyoutSvg元素");
 			return false;
 		}
 		if ((flyoutSvg as any).__snapforge_mouseEventsAttached) return true; //如果已经添加了鼠标事件，则返回true
 		(flyoutSvg as any).__snapforge_mouseEventsAttached = true; //标记定义鼠标事件
 		//鼠标事件函数
 		const handleMouseEnter = (e: MouseEvent) => {
-			console.log("鼠标进入飞出栏");
 			flyoutSvg.style.overflow = "visible";
 		};
 		const handleMouseLeave = (e: MouseEvent) => {
-			console.log("鼠标离开飞出栏");
 			flyoutSvg.style.overflow = "hidden";
 		};
 		//添加鼠标事件

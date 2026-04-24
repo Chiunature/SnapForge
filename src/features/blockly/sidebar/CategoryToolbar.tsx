@@ -25,15 +25,15 @@ export function CategoryToolbar({ workspace, activeCategory, onSelect }: Categor
 		const toolbox = workspace.getToolbox() as any;
 		if (!toolbox) return;
 
-		// continuous-toolbox 点击分类应使用 setSelectedItem，
-		// 才会触发 updateFlyout_ 并滚动到目标分类位置。
+		// 再次点击当前已选分类(activeCategory是表示当前高光类别)：取消选中并收起飞出栏
+		if (name === activeCategory) {
+			toolbox.getFlyout?.()?.hide?.();
+			Blockly.svgResize(workspace);
+			onSelect("", "toolbar-toggle-close");
+			return;
+		}
+		//获取到分类项
 		const categoryItem = toolbox.getCategoryByName?.(name) ?? toolbox.getToolboxItemById?.(name) ?? null;
-		console.log("[SnapForge][CategoryToolbar] click", {
-			target: name,
-			activeCategory,
-			hasCategoryItem: Boolean(categoryItem),
-			hasSetSelectedItem: typeof toolbox.setSelectedItem === "function",
-		});
 		if (categoryItem && typeof toolbox.setSelectedItem === "function") {
 			toolbox.setSelectedItem(categoryItem);
 		} else {
